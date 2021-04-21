@@ -94,7 +94,7 @@ class OrderDetailView(LoginRequiredMixin, TemplateView):
         return self.render_to_response(self.get_context_data())
 
 
-class OrderFilterView(common_views.GenericFilteredListView):
+class OrderFilterView(LoginRequiredMixin, common_views.GenericFilteredListView):
     model = models.OrderBase
     template_name = "order_filter_list.html"
     advanced_search_available = False

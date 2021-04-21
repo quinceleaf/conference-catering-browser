@@ -1,12 +1,13 @@
-{% extends "base.html" %} {% block body_block %} {% load static %} {% load
-widget_tweaks %}
+{% extends "base.html" %} 
+{% block body_block %} 
+{% load static widget_tweaks %}
 
 <div
-  class="max-w-md w-full mx-auto space-y-8 mt-10 py-8 px-14 border border-gray-300 bg-white"
+  class="flex flex-col max-w-md w-full mx-auto space-y-8 mt-10 py-8 px-14 border border-gray-300 bg-white"
 >
-  <div class="text-3xl font-bold">Sign In for Access</div>
+  <div class="text-xl font-bold self-center">Sign In for Access</div>
   <div class="mt-3">
-    <form id="login" class="mt-8 space-y-6" action="#" method="POST">
+    <form id="login" class="mt-0 space-y-6 w-full" action="#" method="POST">
       {% csrf_token %}
       <div class="rounded-md shadow-sm -space-y-px">
         <div>
@@ -37,26 +38,6 @@ widget_tweaks %}
         </div>
       </div>
 
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <input
-            id="remember_me"
-            name="remember_me"
-            type="checkbox"
-            class="h-4 w-4 text-steel-600 focus:ring-steel-500 border-gray-300 rounded"
-          />
-          <label for="remember_me" class="ml-2 block text-sm text-gray-500">
-            Remember me
-          </label>
-        </div>
-
-        <div class="text-sm">
-          <a href="#" class="text-steel-500 hover:text-steel-600">
-            Forgot your password?
-          </a>
-        </div>
-      </div>
-
       <div>
         <button
           type="submit"
@@ -67,7 +48,7 @@ widget_tweaks %}
       </div>
     </form>
   </div>
-  <div class="mt-5 text-gray-500 text-xs">
+  <div class="mt-5 mx-auto text-gray-400 text-xs">
     Please contact your administrator for access
   </div>
 </div>

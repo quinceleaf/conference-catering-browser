@@ -10,38 +10,9 @@ import uuid
 
 
 # ––– THIRD-PARTY IMPORTS
-from simple_history.models import HistoricalRecords
 
 
 # ––– MODELS
-
-
-class HistoryMixin(models.Model):
-    history = HistoricalRecords(inherit=True)
-
-    def get_history(self):
-        return_data = []
-        all_histories = self.history.all()
-        for history in all_histories:
-            delta = history.diff_against(history.prev_record)
-            for change in delta.changes:
-                if change.old:
-                    comment = (
-                        f"{change.field} changed from {change.old} to {change.new}"
-                    )
-                else:
-                    comment = f"{change.field} set to {change.new}"
-            return_data.append(
-                {
-                    "date": history.history_date,
-                    "user": history.history_user,
-                    "comment": comment,
-                }
-            )
-        return return_data
-
-    class Meta:
-        abstract = True
 
 
 class AbstractBaseModel(models.Model):

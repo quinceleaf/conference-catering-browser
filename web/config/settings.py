@@ -24,7 +24,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "127.0.0.1 localhost").split(" ")
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(" ")
 INTERNAL_IPS = os.getenv("INTERNAL_IPS", "127.0.0.1 localhost").split(" ")
 
 # Application definition
@@ -131,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "users.User"
 
-LOGIN_URL = "/login/"
+LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 

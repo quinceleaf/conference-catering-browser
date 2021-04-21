@@ -29,7 +29,7 @@ Generic Base Views
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-class IndexView(TemplateView):
+class IndexView(LoginRequiredMixin, TemplateView):
 
     template_name = "index.html"
 
@@ -47,7 +47,7 @@ class IndexView(TemplateView):
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-class GenericFilteredListView(LoginRequiredMixin, FilterView):
+class GenericFilteredListView(FilterView):
     """
     Must override for each view:
     - model

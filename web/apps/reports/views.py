@@ -1,5 +1,6 @@
 # ––– DJANGO IMPORTS
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages import add_message
 from django.core import serializers
@@ -47,6 +48,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
+@login_required
 def report_select_parameters(request, **kwargs):
     template_name = "report_parameters.html"
     form_class = forms.ReportForm
@@ -62,6 +64,7 @@ def report_select_parameters(request, **kwargs):
     return render(request, template_name, {"form": form})
 
 
+@login_required
 def report_render_results(request, **kwargs):
     template_name = "report_render.html"
 
@@ -92,7 +95,7 @@ def report_render_results(request, **kwargs):
             cost_type_id=cost_type_id,
             range_date=range_date,
         )
-
+        print("tenant_flag:", tenant_flag)
         add_message(
             request,
             messages.SUCCESS,
@@ -122,6 +125,7 @@ def report_render_results(request, **kwargs):
     )
 
 
+@login_required
 def report_export_csv(request, **kwargs):
     params = request.session["report_params"]
 
@@ -160,6 +164,7 @@ def report_export_csv(request, **kwargs):
     return response
 
 
+@login_required
 def report_export_xlsx(request, **kwargs):
     params = request.session["report_params"]
 

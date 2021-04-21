@@ -1595,7 +1595,7 @@ class BillingRecord(common_models.AbstractBaseModel):
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-class Settings(common_models.HistoryMixin, common_models.SortableBaseModel):
+class Settings(common_models.SortableBaseModel):
     """ Orders settings """
 
     # ––– WORKFLOW SETTINGS –––––––––––––––––––––––––––––––––––––––––

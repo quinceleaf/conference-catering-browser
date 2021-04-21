@@ -30,7 +30,7 @@ urlpatterns = [
         name="export_as_csv",
     ),
     path(
-        "list/",
+        "",
         views.OrderFilterView.as_view(),
         name="order_filter",
     ),

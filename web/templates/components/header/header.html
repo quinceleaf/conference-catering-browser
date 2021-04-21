@@ -12,10 +12,15 @@
 
         </div>
 
+        {% if user.is_authenticated %}
         <div class="hidden md:block">
           <div class="ml-4 flex items-center md:ml-6">
+
+            {% include "components/header/header_logout.html" %}
+
           </div>
         </div>
+        {% endif %}
 
         <div class="-mr-2 flex md:hidden">
           {% include "components/header/header_collapsed_menu_button.html" %}

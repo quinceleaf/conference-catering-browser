@@ -36,7 +36,7 @@ Settings
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-class Settings(common_models.HistoryMixin, common_models.AbstractBaseModel):
+class Settings(common_models.AbstractBaseModel):
     """ Reports settings """
 
     def __str__(self):

@@ -69,7 +69,7 @@ def filter_billing_records(
         if tenant_id:
             qs = qs.filter(customer__tenant=tenant_id)
             tenant = users_models.Tenant.objects.get(id=tenant_id)
-            if tenant.id == "ebd85f2b-9851-4d88-88c3-afcad52a1d78":
+            if re.search("University", tenant.name):
                 tenant_flag = "university"
             filter_conditions.append(
                 f"placed by customers at <strong>{tenant.name}</strong>"
@@ -83,7 +83,7 @@ def filter_billing_records(
         elif user_id:
             qs = qs.filter(customer=user_id)
             user = users_models.User.objects.get(id=user_id)
-            if user.tenant.id == "ebd85f2b-9851-4d88-88c3-afcad52a1d78":
+            if re.search("University", tenant.name):
                 tenant_flag = "university"
             filter_conditions.append(
                 f"placed by customer <strong>{user.get_full_name}</strong>"
