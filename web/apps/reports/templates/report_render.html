@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block body_block %}
+{% load static widget_tweaks format_currency humanize ptaeo_split %}
+
+
+<title>Report Results</title>
+
+<!-- START VISIBLE CONTENT -->
+<div class="Xmax-w-5xl">
+
+    <!-- START TOP PANEL -->
+    <div>
+        <div class="font-bold text-2xl">Reports</div>
+        <div class="flex md:flex-row flex-col justify-start">
+            <!-- START ACTIONS -->
+            <div class="md:mt-0 mt-1">
+                <a class="text-steel-500 mr-3" href="{% url 'apps.reports:reports_export_xlsx' %}">
+                    <i class="material-icons text-sm" style="position: relative; top: 0.1em;">system_update_alt</i>
+                    <span class="text-sm hover:underline">Export as XLSX</span>
+                </a>
+            </div>
+            <div class="md:mt-0 mt-1">
+                <a class="text-steel-500 mr-3" href="{% url 'apps.reports:reports_export_csv' %}">
+                    <i class="material-icons text-sm" style="position: relative; top: 0.1em;">system_update_alt</i>
+                    <span class="text-sm hover:underline">Export as CSV</span>
+                </a>
+            </div>
+            <!-- END ACTIONS -->
+        </div>
+    </div>
+    <!-- END TOP PANEL -->
+
+    <!-- START RESULTS -->
+    <div class="mt-3 p-4 w-full border border-gray-300 bg-white">
+
+        <div class="mb-2 text-xl font-bold">Requested Results</div>
+
+        <!-- START SUMMARY -->
+            <div class="grid grid-cols-2 mt-3 mb-5 p-3 md:w-1/3 w-full border border-gray-100">
+
+                <div class="py-1 font-bold text-xs text-left border-b border-b-gray-100">Total Charges</div>
+                <div class="py-1 font-bold pr-4 text-sm text-right border-b border-b-gray-100">{{summary.total_cost__sum|format_currency|default:"$0.00"}}</div>
+
+
+                <div class="py-1 text-xs text-left">Food (Internal)</div>
+                <div class="py-1 text-sm text-right pr-4">{{summary.food_internal__sum|floatformat:2|intcomma|default:"0.00"}}</div>
+
+                <div class="py-1 text-xs text-left">Food (External)</div>
+                <div class="py-1 text-sm text-right pr-4">{{summary.food_external__sum|floatformat:2|intcomma|default:"0.00"}}</div>
+
+                <div class="py-1 text-xs text-left">Alcohol/Beverages</div>
+                <div class="py-1 text-sm text-right pr-4">{{summary.alcohol_beverages__sum|floatformat:2|intcomma|default:"0.00"}}</div>
+
+                <div class="py-1 text-xs text-left">Labor</div>
+                <div class="py-1 text-sm text-right pr-4">{{summary.labor__sum|floatformat:2|intcomma|default:"0.00"}}</div>
+
+                <div class="py-1 text-xs text-left">Rentals</div>
+                <div class="py-1 text-sm text-right pr-4">{{summary.rentals__sum|floatformat:2|intcomma|default:"0.00"}}</div>
+
+            </div>
+        <!-- END SUMMARY -->
+
+        <!-- START DETAILS -->
+            <div class="p-3 border border-gray-100">
+
+                <!-- START COUNT -->
+                <div class="mb-4 text-xs text-gray-400">{{billing_records.count}} orders matched filter(s)</div>
+                <!-- END COUNT -->
+
+                {% if tenant_flag == "university" %}
+                    <div class="grid lg:grid-cols-9 grid-cols-1">
+                {% else %}
+                    <div class="grid lg:grid-cols-5 grid-cols-1">
+                {% endif %}
+
+                    <!-- START HEADING -->
+                    <div class="py-1 font-bold text-xs lg:grid hidden">Date</div>
+                    <div class="py-1 font-bold text-xs lg:grid hidden">Inv Number</div>
+                    {% if tenant_flag == "university" %}
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Project</div>
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Task</div>
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Award</div>
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Expenditure</div>
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Organization</div>
+                    {% else %}
+                        <div class="py-1 font-bold text-xs lg:grid hidden">Payment Ref</div>
+                    {% endif %}
+                    <div class="py-1 font-bold text-xs lg:grid hidden">Customer</div>
+                    <div class="pr-2 py-1 font-bold text-xs lg:text-right text-left lg:grid hidden">Total Charges</div>
+                    <!-- END HEADING -->
+
+                    <!-- START DATA -->
+                    {% for record in billing_records %}
+                        {% if forloop.counter|divisibleby:2 %}
+                            <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.event_date}}</div>
+                            <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">
+                                <a class="text-steel-500 hover:underline" href="{% url 'apps.orders:order_detail' pk=record.order_id %}">
+                                    {{record.order.invoice_number}}
+                                </a>
+                            </div>
+                            {% if tenant_flag == "university" %}
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference|ptaeo_split:"project"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference|ptaeo_split:"task"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference|ptaeo_split:"award"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference|ptaeo_split:"expenditure"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference|ptaeo_split:"organization"}}</div>
+                            {% else %}
+                                <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.payment_reference}}</div>
+                            {% endif %}
+                            <div class="py-1 text-xs border-t border-t-gray-100 bg-steel-50">{{record.order.customer.get_full_name}}</div>
+                            <div x-data="{ open: false }" class="pr-2 py-1 text-xs lg:text-right text-left border-t border-t-gray-100 bg-steel-50">
+                                <span @click="open = !open" class="text-steel-500 hover:underline">
+                                    {% if forloop.first %}
+                                        {{record.total_cost|format_currency}}
+                                    {% else %}
+                                        {{record.total_cost}}
+                                    {% endif %}
+                                </span>
+                                <span
+                                    x-show="open"
+                                    x-transition:enter-start="opacity-0 scale-90"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="ease-in transition-slow"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-90"                    
+                            
+                                    @click.away="open = false"
+                                    class="text-xs text-gray-400"
+                                >
+                                    <br/>
+                                    Food (Internal) {{record.food_internal|floatformat:2|intcomma}}<br/>
+                                    Food (External) {{record.food_external|floatformat:2|intcomma}}<br/>
+                                    Alcohol/Bev. {{record.alcohol_beverages|floatformat:2|intcomma}}<br/>
+                                    Labor {{record.labor|floatformat:2|intcomma}}<br/>
+                                    Rentals {{record.rentals|floatformat:2|intcomma}}
+                                </span>
+                            </div>
+                        {% else %}
+                            <div class="py-1 text-xs border-t border-t-gray-100">{{record.event_date}}</div>
+                            <div class="py-1 text-xs border-t border-t-gray-100">
+                                <a class="text-steel-500 hover:underline" href="{% url 'apps.orders:order_detail' pk=record.order_id %}">
+                                    {{record.order.invoice_number}}
+                                </a>
+                            </div>
+                            {% if tenant_flag == "university" %}
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference|ptaeo_split:"project"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference|ptaeo_split:"task"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference|ptaeo_split:"award"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference|ptaeo_split:"expenditure"}}</div>
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference|ptaeo_split:"organization"}}</div>
+                            {% else %}
+                                <div class="py-1 text-xs border-t border-t-gray-100">{{record.payment_reference}}</div>
+                            {% endif %}
+                            <div class="py-1 text-xs border-t border-t-gray-100">{{record.order.customer.get_full_name}}</div>
+                            <div x-data="{ open: false }" class="pr-2 py-1 text-xs lg:text-right text-left  border-t border-t-gray-100">
+                                <span @click="open = !open" class="text-steel-500 hover:underline">
+                                    {% if forloop.first %}
+                                        {{record.total_cost|format_currency}}
+                                    {% else %}
+                                        {{record.total_cost}}
+                                    {% endif %}
+                                </span>
+                                <span
+                                    x-show="open"
+                                    x-transition:enter-start="opacity-0 scale-90"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="ease-in transition-slow"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-90"                    
+                            
+                                    @click.away="open = false"
+                                    class="text-xs text-gray-400"
+                                >
+                                    <br/>
+                                    Food (Internal) {{record.food_internal|floatformat:2|intcomma}}<br/>
+                                    Food (External) {{record.food_external|floatformat:2|intcomma}}<br/>
+                                    Alcohol/Bev. {{record.alcohol_beverages|floatformat:2|intcomma}}<br/>
+                                    Labor {{record.labor|floatformat:2|intcomma}}<br/>
+                                    Rentals {{record.rentals|floatformat:2|intcomma}}
+                                </span>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="py-1 col-span-full text-xs border-b border-b-gray-100">No records match your filter parameters</div>
+                    {% endfor %}
+                    <!-- END DATA -->
+
+                </div>
+            </div>
+        <!-- END DETAILS -->
+
+    </div>
+    <!-- END RESULTS  -->
+
+</div>
+
+<!-- END VISIBLE CONTENT -->
+
+{% endblock %}

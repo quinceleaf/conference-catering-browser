@@ -1,0 +1,622 @@
+{% load static humanize check_floor_numeric included_in_package format_currency %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include "components/site-info.html" %} 
+    {% include "components/styles.html" %}
+    {% include "components/styles_pdf_export.html" %}
+  </head>
+
+  <body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+      {% include "components/header/header.html" %}
+      <main class="flex flex-grow">
+        <div class="flex flex-row w-full">
+          <div class="flex-grow mx-auto py-6">
+
+            <title>{{data.invoice_number}}</title>
+
+            <!-- START VISIBLE CONTENT -->
+            <div>
+
+                <!-- START TOP PANEL -->
+                <div class="mb-5">
+                    <div class="flex flex-col justify-start">
+                        <div>
+                            <a class="font-bold text-steel-500 text-md hover:underline" href="{% url 'apps.orders:order_filter' %}">
+                                Orders
+                            </a>
+                        </div>
+                        <div class="flex flex-row items-center">
+                            <div class="font-bold text-2xl">
+                                {{data.invoice_number}}
+                            </div>
+                            {% if data.status.status == 'CONFIRMED' %}
+                            <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                                <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
+                                <div class="ml-2">{{data.status.get_status_display.upper}}</div>
+                            </div>
+                            {% elif data.status.status == 'CHANGE_REQUEST' %}
+                            <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                                <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
+                                <div class="ml-2">{{data.status.get_status_display.upper}}</div>
+                            </div>
+                            {% elif data.status.status == 'CANCELLED' %}
+                            <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-red-500 rounded-md">
+                                <div><i class="material-icons" style="position: relative; top: 0.1em;">close</i></div>
+                                <div class="ml-2">
+                                    CANCELLED on {{order.status.date_changed|date:"F j, Y"}} at
+                                    {{order.status.date_changed|date:"g:i A"}}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- END TOP PANEL -->
+
+                <!-- START DETAILS -->
+                <div class="mt-3 p-4 w-full border border-gray-300 bg-white">
+
+                    <div class="mt-2 mb-5 font-bold">Details</div>
+
+                    <!-- START EVENT DATE -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">Event Date</div>
+                        <div class="text-sm">
+                            {{data.event_date|date:"F j, Y (l)"}}
+                        </div>
+                    </div>
+                    <!-- END EVENT DATE -->
+
+                    <!-- START DESCRIPTION -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">Description</div>
+                        <div class="text-sm">
+                            {{data.nickname|default:"No description provided"}}
+                        </div>
+                    </div>
+                    <!-- END DESCRIPTION -->
+
+                    {% if data.order_contact %}
+                    <!-- START CONTACT -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">Contact</div>
+                        <div class="text-sm">
+                            {{data.order_contact}}
+                        </div>
+                    </div>
+                    <!-- END CONTACT -->
+                    {% endif %}
+
+                    <!-- START CUSTOMER -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">Customer/Tenant</div>
+                        <div class="text-sm">
+                            {{data.customer.get_full_name}}<br/>
+                            {{data.customer.tenant}}
+                        </div>
+                    </div>
+                    <!-- END CUSTOMER -->
+
+                    <!-- START CIS NUMBERS -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">CIS Numbers</div>
+                        <div class="text-sm">
+                            {{data.cis_numbers|default:"No CIS Numbers assigned"}}
+                        </div>
+                    </div>
+                    <!-- END CIS NUMBERS -->
+                    <!-- START PAYMENT REFERENCE -->
+                    <div class="mb-5">
+                        <div class="text-gray-400 text-xs">Payment Reference</div>
+                        <div class="text-sm">
+                            {{data.payment.payment}}
+                        </div>
+                    </div>
+                    <!-- END PAYMENT REFERENCE -->
+
+                </div>
+                <!-- END DETAILS -->
+
+                <!-- START LOGISTICS -->
+                <div class="mt-5 p-4 w-full border border-gray-300 bg-white">
+
+                    <div class="mt-2 mb-5 font-bold">Menu & Locations</div>
+
+                    {% for logistics in data.logistics.is_active %}
+                    <!-- START HEADING -->
+                        <div class="pb-2 text-gray-500 border-b border-b-gray-100">
+                            {% if order.logistics.count != 1 %}
+                                {{forloop.counter}}
+                            {% endif %}
+                            <i class="material-icons text-sm" style="position: relative; top: 0.1em;">apps</i>
+                            <span class="sm:hidden"><br></span>
+                            {% if order.customer.tenant.buildings.count > 1 %}
+                                {{logistics.building}},<span class="sm:hidden"><br></span>
+                            {% endif %}
+
+                            {% if order.customer.tenant.sitesetting.flag_defined_locations %}
+                                {{logistics.location}}
+                            {% else %}
+                                {% if logistics.floor|check_floor_numeric %}
+                                    {{logistics.floor|ordinal}} floor,
+                                {% else %}
+                                    {{logistics.floor}},
+                                {% endif %}
+                                {{logistics.room}}
+                            {% endif %}
+                            <span class="sm:hidden"><br></span>at {{logistics.event_start|date:"g:i A"}} for {{logistics.guest_count}} guests
+                        </div>
+                    <!-- END HEADING -->
+
+                    <!-- START TIMELINE -->
+                        <div class="mt-2 pl-4">
+                            <div class="mt-4 pb-1 text-gray-400 text-sm border-b border-b-gray-100">
+                                <i class="material-icons text-sm" style="position: relative; top: 0.1em;">query_builder</i>
+                                Timeline
+                            </div>
+                            <div class="flex flex-row pt-1">
+                                <div class="mt-1 pt-0 pb-0 pl-0">
+                                    <div class="text-gray-400 text-xs ">Delivery/Setup</div>
+                                    <div class="text-sm">{{logistics.get_range_short}}</div>
+                                </div>
+
+                                <div class="mt-1 pt-0 pb-0 pl-6">
+                                    <div class="text-gray-400 text-xs">Service Start</div>
+                                    <div class="text-sm">{{logistics.event_start|date:"g:i A"}}</div>
+                                </div>
+
+                                <div class="mt-1 pt-0 pb-0 pl-6">
+                                    <div class="text-gray-400 text-xs">Room Breakdown</div>
+                                    <div class="text-sm">
+                                        {% if logistics.flag_breakdown_needed %}
+                                            {{logistics.event_breakdown|date:"g:i A"}}
+                                        {% else %}
+                                            No breakdown necessary
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <!-- END TIMELINE -->
+
+                    <!-- START ADDONS -->
+                        <div class="mt-2 pl-4">
+                            <div class="mt-2 pb-1 text-gray-400 text-sm border-b border-b-gray-100">
+                                <i class="material-icons text-sm" style="position: relative; top: 0.1em;">library_add</i>
+                                Addons
+                            </div>
+                            <div class="flex flex-col pt-1 text-sm">
+
+                                {% for addon in logistics.addons.all %}
+                                    {{addon}}
+                                    {% if not forloop.last %},{% endif %}
+                                {% empty %}
+                                    None selected
+                                {% endfor %}
+                            </div>
+                        </div>
+                    <!-- END ADDONS -->
+
+                    <!-- START SPECIAL INSTRUCTIONS -->
+                        <div class="mt-2 pl-4">
+                            <div class="mt-2 pb-1 text-gray-400 text-sm border-b border-b-gray-100">
+                                <i class="material-icons text-sm" style="position: relative; top: 0.1em;">subject</i>
+                                Instructions
+                            </div>
+                            <div class="text-sm">
+                                {% if logistics.note.note %}
+                                    {{logistics.note.note|linebreaksbr}}
+                                {% else %}
+                                    None provided
+                                {% endif %}
+                            </div>
+                        </div>
+                    <!-- END SPECIAL INSTRUCTIONS -->
+
+                    <!-- START SELECTIONS -->
+                        <div class="mt-2 pl-4">
+                            <div class="mt-2 pb-1 text-gray-400 text-sm border-b border-b-gray-100">
+                                <i class="material-icons text-sm" style="position: relative; top: 0.1em;">format_list_bulleted</i>
+                                Selections
+                            </div>
+                            <div>
+                                {% for package in logistics.packages.is_active %}
+                                    <div class="mt-3 text-sm">
+                                    <!-- START PACKAGE NAME -->
+                                    <div class="text-gray-400">{{package.package.name}}</div>
+                                    <!-- END PACKAGE NAME -->
+
+                                    <!-- START PACKAGE SELECTIONS -->
+                                    <div class="mt-2">
+
+                                    {% if package.courses.count > 0 %}
+                                        {% for course in package.courses.is_active %}
+
+                                            {% if course.flag_active %}
+                                                <span>
+                                                    <strong>{{course.course.name}}</strong>
+                                                    {% if course.course.price_descriptive %}
+                                                        <span class="text-steel-500">
+                                                            &nbsp;{{ course.course.price_descriptive }}
+                                                        </span>
+                                                    {% endif %}
+                                                </span>
+
+                                                {% for item in course.items.is_active %}
+                                                    <ul style="margin: 0px 0px 0px 0px;">
+                                                        <li>
+                                                            {{item.menu_item.name}}
+                                                            {% if item.menu_item.tags.count > 0 %}
+                                                                <span class="preference-tag">
+                                                                    {% for tag in item.menu_item.tags.is_gp_standard %}
+                                                                        &nbsp;{{tag.name}}
+                                                                    {% endfor %}
+
+                                                                    {% for tag in item.menu_item.tags.is_squarespace_allergen %}
+                                                                        {% if item.menu_item.tags.is_squarespace_allergen.count == 1 %}
+                                                                            &nbsp;+({{tag.name}})
+                                                                        {% else %}
+                                                                            {% if forloop.first %}
+                                                                                &nbsp;+({{tag.name}},
+                                                                            {% elif forloop.last %}
+                                                                                {{tag.name}})
+                                                                            {% else %}
+                                                                                {{tag.name}},
+                                                                            {% endif %}
+                                                                        {% endif %}
+                                                                    {% endfor %}
+
+                                                                    {% for tag in item.menu_item.tags.is_squarespace_preference %}
+                                                                        {% if item.menu_item.tags.is_squarespace_preference.count == 1 %}
+                                                                            &nbsp;{{tag.name}}
+                                                                        {% else %}
+                                                                            {% if forloop.first %}
+                                                                                &nbsp;{{tag.name}},
+                                                                            {% elif forloop.last %}
+                                                                                &nbsp;{{tag.name}}
+                                                                            {% else %}
+                                                                                &nbsp;{{tag.name}},
+                                                                            {% endif %}
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </span>
+                                                            {% endif %}
+
+                                                            {% if item.menu_item.price_descriptive %}
+                                                                &nbsp;<span class="text-steel-500">
+                                                                    {{ item.menu_item.price_descriptive }}
+                                                                </span>
+                                                            {% endif %}
+
+                                                            {% if item.modifications.count > 0 %}
+                                                                {% for mod in item.modifications.all %}
+                                                                    <span class="text-steel-500">
+                                                                    &nbsp; + {{ mod.modification.description }}
+                                                                    </span>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </li>
+                                                    </ul>
+                                                {% endfor %}
+
+                                            {% else %}
+                                            {% endif %}
+
+                                        {% endfor %}
+
+                                    {% else %}
+                                        {% for item in package.items.is_active %}
+                                            {% if item.menu_item.id|included_in_package:package.package.id  %}
+                                                {% if item.flag_active %}
+                                                    <span style="position: relative; top: 0.0em; left: -1.5em;">
+                                                        <ul style="margin: 0px 0px 0px 0px;">
+                                                            <li>
+                                                                {{item.menu_item.name}}
+                                                                {% if item.menu_item.tags.count > 0 %}
+                                                                    <span class="preference-tag">
+                                                                        {% for tag in item.menu_item.tags.is_gp_standard %}
+                                                                            &nbsp;{{tag.name}}
+                                                                        {% endfor %}
+
+                                                                        {% for tag in item.menu_item.tags.is_squarespace_allergen %}
+                                                                            {% if item.menu_item.tags.is_squarespace_allergen.count == 1 %}
+                                                                                &nbsp;+({{tag.name}})
+                                                                            {% else %}
+                                                                                {% if forloop.first %}
+                                                                                    &nbsp;+({{tag.name}},
+                                                                                {% elif forloop.last %}
+                                                                                    {{tag.name}})
+                                                                                {% else %}
+                                                                                    {{tag.name}},
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+
+                                                                        {% for tag in item.menu_item.tags.is_squarespace_preference %}
+                                                                            {% if item.menu_item.tags.is_squarespace_preference.count == 1 %}
+                                                                                &nbsp;{{tag.name}}
+                                                                            {% else %}
+                                                                                {% if forloop.first %}
+                                                                                    &nbsp;{{tag.name}},
+                                                                                {% elif forloop.last %}
+                                                                                    &nbsp;{{tag.name}}
+                                                                                {% else %}
+                                                                                    &nbsp;{{tag.name}},
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    </span>
+                                                                {% endif %}
+                                                                {% if item.menu_item.id|included_in_package:package.package.id  %}
+                                                                    <span class="text-steel-500">&nbsp;included</span>
+                                                                {% endif %}
+                                                                {% if item.menu_item.price_descriptive %}
+                                                                    &nbsp;<span class="text-steel-500">
+                                                                        {{ item.menu_item.price_descriptive }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </li>
+                                                        </ul>
+                                                    </span>
+                                                {% else %}
+                                                {% endif %}
+
+                                            {% endif %}
+                                        {% endfor %}
+
+                                        {% for item in package.items.is_active %}
+                                            {% if not item.menu_item.id|included_in_package:package.package.id  %}
+                                                {% if item.flag_active %}
+                                                    <span style="position: relative; top: 0.0em; left: -1.5em;">
+                                                        <ul style="margin: 0px 0px 0px 0px;">
+                                                            <li>
+                                                                {{item.menu_item.name}}
+
+                                                                {% if item.menu_item.tags.count > 0 %}
+                                                                    <span class="preference-tag">
+                                                                        {% for tag in item.menu_item.tags.is_gp_standard %}
+                                                                            &nbsp;{{tag.name}}
+                                                                        {% endfor %}
+
+                                                                        {% for tag in item.menu_item.tags.is_squarespace_allergen %}
+                                                                            {% if item.menu_item.tags.is_squarespace_allergen.count == 1 %}
+                                                                                &nbsp;+({{tag.name}})
+                                                                            {% else %}
+                                                                                {% if forloop.first %}
+                                                                                    &nbsp;+({{tag.name}},
+                                                                                {% elif forloop.last %}
+                                                                                    {{tag.name}})
+                                                                                {% else %}
+                                                                                    {{tag.name}},
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+
+                                                                        {% for tag in item.menu_item.tags.is_squarespace_preference %}
+                                                                            {% if item.menu_item.tags.is_squarespace_preference.count == 1 %}
+                                                                                &nbsp;{{tag.name}}
+                                                                            {% else %}
+                                                                                {% if forloop.first %}
+                                                                                    &nbsp;{{tag.name}},
+                                                                                {% elif forloop.last %}
+                                                                                    &nbsp;{{tag.name}}
+                                                                                {% else %}
+                                                                                    &nbsp;{{tag.name}},
+                                                                                {% endif %}
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    </span>
+                                                                {% endif %}
+
+                                                                {% if item.menu_item.id|included_in_package:package.package.id  %}
+                                                                    <span class="text-steel-500">&nbsp;included</span>
+                                                                {% endif %}
+                                                                {% if item.menu_item.price_descriptive %}
+                                                                    &nbsp;<span class="text-steel-500">
+                                                                        {{ item.menu_item.price_descriptive }}
+                                                                    </span>
+                                                                {% endif %}
+                                                            </li>
+                                                        </ul>
+                                                    </span>
+                                                {% else %}
+                                                {% endif %}
+
+                                            {% endif %}
+                                        {% endfor %}
+
+                                    {% endif %}
+                                                    
+                                    {% if package.flag_override and user.role == 'GP Manager' %}
+                                        <div style="margin-top: 10px; color: red; font-size: 0.8em;">
+                                            <strong>PACKAGE SELECTIONS HAVE BEEN OVERRIDDEN – ADJUST PRICE BELOW IF NECESSARY</strong>
+                                        </div>
+                                    {% else %}
+                                    {% endif %}
+                                    </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    <!-- END – SELECTIONS -->
+
+                    {% endfor %}
+
+                </div>
+                <!-- END LOGISTICS -->
+
+                <!-- START ESTIMATED COSTS -->
+                <div class="mt-5 p-4 w-full border border-gray-300 bg-white">
+
+                    <div class="mt-2 mb-5 font-bold">Estimated Costs</div>
+
+                    <table class="table-fixed w-full">
+
+                        <!-- START HEADING -->            
+                        <tr class="pb-2 border-b border-b-gray-100">
+                            <td class="w-2/5 py-2 font-bold text-xs">Package</td>
+                            <td class="w-1/5 py-2 pr-5 font-bold text-xs text-right">Costs</td>
+                            <td class="w-2/5 py-2 font-bold text-xs">Notes</td>
+                        </tr>
+                        <!-- END HEADING -->
+
+                        <!-- START DETAILS -->
+                        {% for logistics in packages_estimated_cost %}
+                            <!-- START LOGISTICS HEADING -->
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="py-2 font-bold text-xs" colspan=3>{{logistics.description}}</td>
+                            </tr>
+                            <!-- END LOGISTICS HEADING -->
+
+                            <!-- START LOGISTICS PACKAGES -->
+                            {% for package in logistics.packages %}
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    {{package.name}}
+
+                                    {% for addon in package.addons_staff %}
+                                        <br/>
+                                        <span class="ml-2">
+                                            <i class="material-icons text-sm" style="position: relative; top: 0.1em;">add_circle_outline</i>
+                                            Addon: {{addon.name}}
+                                        </span>
+                                    {% endfor %}                                
+                                </td>
+
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {% if forloop.first %}
+                                        {{package.cost|format_currency}}
+                                    {% else %}
+                                        {{package.cost}}
+                                    {% endif %}
+                        
+                                    {% for addon in package.addons_staff %}
+                                        {% if addon.cost == 0 %}
+                                            <br/><span class="mr-4">TBD</span>
+                                        {% else %}
+                                            <br/><span class="mr-4">{{addon.cost}}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+
+                                <td class="w-2/5 py-2 text-xs">
+                                    {{package.guest_count}} guests, at {{package.price_descriptive}}
+
+                                    {% for addon in package.addons_staff %}
+                                        <div class="flex flex-col justify-between">
+                                            <div>
+                                                {% if addon.note %}
+                                                    {{addon.note}}
+                                                {% else %}
+                                                    &nbsp;
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}                                
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <!-- END LOGISTICS PACKAGES -->
+
+                            {% if logistics.addons_staff.addons_staff|length > 0 %}
+                                <!-- START LOGISTICS ADDONS -->
+                                {% for addon in logistics.addons_staff.addons_staff %}
+                                <tr class="pb-2 border-b border-b-gray-100">
+                                    <td class="w-2/5 py-2 text-xs">
+                                        <i class="material-icons text-xs text-gray-400" style="position: relative; top: 0.1em;">add_circle_outline</i>
+                                        Addon: {{addon.name}}                                    
+                                    </td>
+                                    <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                        {% if addon.cost == 0 %}
+                                            TBD
+                                        {% else %}
+                                            {{addon.cost}}
+                                        {% endif %}
+                                    </td>
+                                    <td class="w-2/5 py-2 text-xs">
+                                        {% if addon.cost == 0 %}
+                                            TBD
+                                        {% elif addon.note %}
+                                            {{addon.note}}
+                                        {% elif addon.price_descriptive %}
+                                            {{addon.price_descriptive}}
+                                        {% else %}
+                                            &nbsp;
+                                        {% endif %}                                    
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!-- END LOGISTICS ADDONS -->
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if flag_order_addons %}
+                            <!-- START – ORDER ADD-ONS -->
+
+                                <!-- START ORDER ADD-ONS HEADING -->
+                                <tr class="pb-2 border-b border-b-gray-100">
+                                    <td class="py-2 font-bold text-xs" colspan=3>Other Addons</td>
+                                </tr>
+                                <!-- END ORDER ADD-ONS HEADING -->
+                                <!-- START ORDER ADD-ONS DETAILS -->
+                                {% for addon in order.addons_staff.is_active %}
+                                    {% if addon.logistics %}
+                                    {% elif addon.package %}
+                                    {% else %}                                
+                                        <tr class="pb-2 border-b border-b-gray-100">
+                                            <td class="w-2/5 py-2 text-xs">
+                                               Addon: {{addon.name}}
+                                            </td>
+                                            <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                                {% if addon.cost == 0 %}
+                                                    TBD
+                                                {% else %}
+                                                    {{addon.price_numeric_fixed|format_currency}}
+                                                {% endif %}
+                                            </td>
+                                            <td class="w-2/5 py-2 text-xs">
+                                                {% if addon.note %}
+                                                    {{addon.note}}
+                                                {% else %}
+                                                    &nbsp;
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                </div>
+                                <!-- END ORDER ADD-ONS DETAILS -->
+                            <!-- END – ORDER ADD-ONS -->
+                        {% endif %}
+                        <!-- END DETAILS -->
+
+                        <!-- START FOOTER -->
+                        <tr class="pb-2 border-b border-b-gray-100">
+                            <td class="w-2/5 py-2 font-bold text-xs">TOTAL</td>
+                            <td class="w-1/5 py-2 pr-5 font-bold text-xs text-right">{{total_estimated_cost|format_currency}}</td>
+                            <td class="w-2/5 py-2 font-bold text-xs"></td>
+                        </tr>
+
+                        <tr class="pb-2">
+                            <td class="w-full py-2 text-xs text-gray-400" colspan=3>
+                            This total is merely an estimate based on the choices indicated above, and may be adjusted to reflect necessary labor and rentals or to accommodate any special requests.
+                            </td>
+                        </tr>
+                        <!-- END FOOTER -->
+                    </table>
+                </div>
+                <!-- END ESTIMATED COSTS -->
+
+            </div>
+            <!-- END VISIBLE CONTENT -->
+
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

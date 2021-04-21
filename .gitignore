@@ -1,0 +1,42 @@
+# environment variables
+.env.dev
+.env.dev.db
+.env.dev.db-only
+.env.prod
+.env.prod.db
+
+# virtualenv
+.venv
+
+
+# planning & documentation
+docs/*
+
+# data
+conference-catering.json
+
+# development tooling
+db.sqlite3
+up.sh
+down.sh
+down-v.sh
+logs.sh
+up-prod.sh
+down-prod.sh
+down-v-prod.sh
+logs-prod.sh
+
+auth-github-packages.sh
+build-image.sh
+push-image-to-docker.sh
+set-do-token.sh
+write-env-to-github-secrets.py
+
+jstools
+scripts
+
+# temporary files
+*.pyc 
+
+# macOS
+.DS_Store

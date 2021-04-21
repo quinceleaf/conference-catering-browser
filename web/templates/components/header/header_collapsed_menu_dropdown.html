@@ -1,0 +1,18 @@
+    <!-- START MOBILE MENU (DROPDOWN) -->
+    <div id="menu-dropdown" class="hidden md:hidden z-50 mt-3 border border-gray-100 bg-white shadow-md">
+      {% if user.is_authenticated %}
+
+      <!-- START MODULE LINKS -->
+      <div class="px-2 pt-2 pb-5 Xspace-y-1 sm:px-3">
+        {% for link in app_header_links %}
+          <div class="mt-4">
+            <a href="{% url link.route %}"
+            class="my-5 px-3 py-1 text-sm text-steel-500 rounded-md hover:bg-steel-400 hover:text-white transition duration-300">{{link.label}}</a>
+          </div>
+        {% endfor %}
+      </div>
+      <!-- START MODULE LINKS -->
+
+      {% endif %}
+    </div>
+    <!-- END MOBILE MENU (DROPDOWN) -->

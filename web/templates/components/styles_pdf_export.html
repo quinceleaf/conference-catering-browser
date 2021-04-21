@@ -1,0 +1,30 @@
+    <style type="text/css">
+      @page {
+        margin: 2cm;
+
+        @top-left {
+          content: '';
+          height: 1cm;
+          text-align: center;
+          width: 1cm; }
+
+        @top-right {
+          content: string(heading);
+          font-size: 9pt;
+          height: 1cm;
+          vertical-align: middle;
+          width: 100%; }    
+
+        @bottom-left {
+          color: #77838f;
+          font-family: Inter;
+          content: '{{printed_as_of}}';
+          font-size: 8pt; }
+
+        @bottom-right {
+          color: #77838f;
+          content: "Page " counter(page) " of " counter(pages); 
+          font-family: Inter;
+          font-size: 8pt; } 
+      }
+    </style>

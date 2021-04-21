@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block body_block %}
+{% load static widget_tweaks %}
+
+
+<title>Report Parameters</title>
+
+<link type="text/css" rel="stylesheet" href="{% static 'css/select2.min.css' %}"/>
+<link type="text/css" rel="stylesheet" href="{% static 'css/select2-custom.css' %}"/>
+<link type="text/css" rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}"/>
+
+<!-- START VISIBLE CONTENT -->
+<div class="md:mx-auto max-w-5xl md:pl-0 pl-1 Xmax-w-5xl" x-data="parameterForm()" x-init="() => {
+
+    select2Tenant = $($refs.tenant).select2();
+    select2Tenant.on('select2:select', (event) => {
+      selectedTenant = event.target.value;
+      selectedTenantGroup = null;
+      selectedUser = null;
+    });
+    $watch('selectedTenant', (value) => {
+      select2Tenant.val(value).trigger('change');
+    });
+
+    select2TenantGroup = $($refs.tenantgroup).select2();
+    select2TenantGroup.on('select2:select', (event) => {
+      selectedTenantGroup = event.target.value;
+      selectedTenant = null;
+      selectedUser = null;
+    });
+    $watch('selectedTenantGroup', (value) => {
+      select2TenantGroup.val(value).trigger('change');
+    });
+
+    select2User = $($refs.user).select2();
+    select2User.on('select2:select', (event) => {
+      selectedUser = event.target.value;
+      selectedTenant = null;
+      selectedTenantGroup = null;
+    });
+    $watch('selectedUser', (value) => {
+      select2User.val(value).trigger('change');
+    });
+
+    select2CostType = $($refs.costtype).select2();
+    select2CostType.on('select2:select', (event) => {
+      selectedCostType = event.target.value;
+    });
+    $watch('selectedCostType', (value) => {
+      select2CostType.val(value).trigger('change');
+    });
+
+
+  }">
+
+    <!-- START TOP PANEL -->
+    <div>
+        <div class="font-bold text-2xl">Reports</div>
+        <div class="flex md:flex-row flex-col md:justify-between justify-start">
+            <!-- START ACTIONS -->
+            <div class="md:mt-0 mt-1">
+                <a class="text-steel-500 mr-3" href="{% url 'apps.orders:export_as_csv' %}">
+                    <i class="material-icons text-sm" style="position: relative; top: 0.1em;">add_circle_outline</i>
+                    <span class="text-sm hover:underline">Export as CSV</span>
+                </a>
+            </div>
+            <!-- END ACTIONS -->
+        </div>
+    </div>
+    <!-- END TOP PANEL -->
+
+    <!-- START PARAMETER SELECTION -->
+    <div class="mt-3 p-4 w-full border border-gray-300 bg-white">
+
+        <div class="mb-2 text-xl font-bold">Choose Parameters</div>
+
+        <div class="text-sm text-gray-400">
+        <ul>
+            <li>You can filter the results on any of the parameters below</li>
+            <li><strong>Tenant</strong>, <strong>Tenant Group</strong> and <strong>User</strong> fields are mutually-exclusive</li>
+        </ul>
+        </div>
+
+        <div class="pt-4">
+            <form method="post" novalidate>
+                {% csrf_token %}
+            
+                {% include 'generic/generic_mutate_errors.html' with form=form %}
+
+                <!-- START FORM (INPUT) -->
+
+                <!-- RANGE DATE -->
+                <div class="mb-5">
+                    <label for="range_date" class="mb-2 text-xs text-gray-500">
+                        {{form.range_date.label_tag}}
+                        {% if not form.range_date.field.required %}
+                        <em>– optional</em>
+                        {% endif %}
+                    </label>
+
+                    {% if form.is_bound %}
+                        {% if form.range_date.errors %}
+                        <div class="mt-1 relative rounded-md">
+                        {% render_field form.range_date id="range-date" class="px-5 w-full text-base border-red-300 bg-red-50 rounded-md focus:ring-steel-300 focus:border-steel-300" %}
+                        </div>
+                        <div class="mt-2 text-xs text-red-500">
+                        {% for error in form.range_date.errors %}
+                            {{ error }}
+                        {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="mt-1 relative rounded-md">
+                        {% render_field form.range_date id="range-date" class="px-5 w-full text-base border-gray-300 rounded-md focus:ring-steel-300 focus:border-steel-300" %}
+                        </div>
+                        {% endif %}
+                    {% else %}
+                    <div class="mt-1 relative rounded-md">
+                        {% render_field form.range_date id="range-date" class="px-5 w-full text-base border-gray-300 rounded-md focus:ring-steel-300 focus:border-steel-300" %}
+                    </div>
+                    {% endif %}
+
+                    {% if form.range_date.help_text %}
+                        <small class="md:mt-1 mt-2 text-xs text-gray-500">{{ form.range_date.help_text|safe }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="mb-5 p-4 border border-gray-100">
+
+                    <div class="mb-2 font-bold">Choose either Tenant, Tenant Group or User</div>
+
+                    <!-- TENANT -->
+                    {% include 'generic/generic_form_field.html' with form=form field=form.tenant ref="tenant" %}
+
+                    <!-- TENANT GROUP -->
+                    {% include 'generic/generic_form_field.html' with form=form field=form.tenant_group ref="tenantgroup" %}
+                    
+                    <!-- USER -->
+                    {% include 'generic/generic_form_field.html' with form=form field=form.user ref="user" %}
+                </div>
+
+                <!-- COST TYPE -->
+                {% include 'generic/generic_form_field.html' with form=form field=form.cost_type ref="costtype" %}
+
+
+
+                </div>
+                <!-- END FORM (INPUT) -->
+
+                <!-- START BUTTONS -->
+                <div class="flex flex-row mt-6">
+                    <button type="submit"
+                        class="group relative flex justify-center mr-3 py-2 px-4 border border-transparent text-sm rounded-md text-white bg-steel-600 hover:bg-blur-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-steel-300">
+                        Generate Report
+                    </button>
+                    <a type="button" href="{{request.META.HTTP_REFERER}}"
+                        class="group relative flex justify-center py-2 px-4 border border-gray-300 text-sm rounded-md text-gray-500 bg-white hover:bg-blur-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-steel-300">
+                        Cancel
+                    </a>
+                </div>
+                <!-- END BUTTONS -->
+
+            </form>
+
+
+            </div>
+        </div>
+    </div>
+    <!-- END PARAMETER SELECTION  -->
+
+</div>
+
+<!-- END VISIBLE CONTENT -->
+
+<script type="text/javascript" src="{% static 'js/jquery-3.5.1.min.js' %}" ></script> 
+<script type="text/javascript" src="{% static 'js/select2.min.js' %}" ></script>
+<script type="text/javascript" src="{% static 'django_select2/django_select2.js' %}" ></script> 
+<script type="text/javascript" src="{% static 'js/flatpickr.js' %}"></script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    let selectFilters = $('.django-select2');
+    selectFilters.each(function() {
+        let placeholder = $(this).attr('placeholder');
+        $(this).select2({placeholder: placeholder, allowClear: true});
+    })
+  });
+</script>
+
+<script type="text/javascript">
+flatpickr("#range-date", {
+    mode: "range",
+    altInput: true,
+    altFormat: "F j, Y",
+    dateFormat: "Y-m-d",
+});
+</script>
+
+  <script type="text/javascript">
+
+  function parameterForm() {
+      return {
+        selectedTenant: null,
+        selectedTenantGroup: null,
+        selectedUser: null,
+      }
+  };
+  </script>
+
+{% endblock %}
