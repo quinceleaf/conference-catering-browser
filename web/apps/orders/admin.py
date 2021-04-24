@@ -204,7 +204,10 @@ class OrderBase(BaseAdminConfig):
         "__str__",
         "get_status",
     )
-    list_filter = ("status__status",)
+    list_filter = (
+        "status__status",
+        "flag_custom",
+    )
 
 
 @admin.register(models.OrderCourse)

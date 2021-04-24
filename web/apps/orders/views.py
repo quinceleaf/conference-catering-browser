@@ -66,15 +66,19 @@ class OrderDetailView(LoginRequiredMixin, TemplateView):
         context["form"] = self.form(instance=obj)
         context["options"] = common_services.get_page_context_options(self.model)
 
-        total_estimated_cost = services.calculate_order_total_cost(
-            order=obj, status="is_active"
-        )["total_estimated_cost"]
-        context["total_estimated_cost"] = total_estimated_cost
+        if obj.flag_custom:
+            context["total_estimated_cost"] = None
+            context["packages_estimated_cost"] = None
+        else:
+            total_estimated_cost = services.calculate_order_total_cost(
+                order=obj, status="is_active"
+            )["total_estimated_cost"]
+            context["total_estimated_cost"] = total_estimated_cost
 
-        packages_estimated_cost = services.calculate_order_packages_cost(
-            order=obj, status="is_active"
-        )
-        context["packages_estimated_cost"] = packages_estimated_cost
+            packages_estimated_cost = services.calculate_order_packages_cost(
+                order=obj, status="is_active"
+            )
+            context["packages_estimated_cost"] = packages_estimated_cost
 
         if (
             obj.addons_staff.is_active()

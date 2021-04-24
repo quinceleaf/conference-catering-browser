@@ -20,21 +20,29 @@
                 <div class="font-bold text-2xl">
                     {{data.invoice_number}}
                 </div>
-                {% if data.status.status == 'CONFIRMED' %}
-                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
-                    <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
-                    <div>{{data.status.get_status_display.upper}}</div>
-                </div>
-                {% elif data.status.status == 'CHANGE_REQUEST' %}
-                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
-                    <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
-                    <div>{{data.status.get_status_display.upper}}</div>
-                </div>
-                {% elif data.status.status == 'CANCELLED' %}
-                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-red-500 rounded-md">
-                    <div><i class="material-icons" style="position: relative; top: 0.1em;">close</i></div>
-                    <div>{{data.status.get_status_display.upper}}</div>
-                </div>
+
+                {% if data.flag_custom %}
+                    <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-steel-500 rounded-md">
+                        <div><i class="material-icons" style="position: relative; top: 0.1em;">grade</i></div>
+                        <div>CUSTOM ORDER</div>
+                    </div>
+                {% else %}
+                    {% if data.status.status == 'CONFIRMED' %}
+                    <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                        <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
+                        <div>{{data.status.get_status_display.upper}}</div>
+                    </div>
+                    {% elif data.status.status == 'CHANGE_REQUEST' %}
+                    <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                        <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
+                        <div>{{data.status.get_status_display.upper}}</div>
+                    </div>
+                    {% elif data.status.status == 'CANCELLED' %}
+                    <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-red-500 rounded-md">
+                        <div><i class="material-icons" style="position: relative; top: 0.1em;">close</i></div>
+                        <div>{{data.status.get_status_display.upper}}</div>
+                    </div>
+                    {% endif %}
                 {% endif %}
 
 
@@ -126,6 +134,12 @@
     <div class="mt-5 p-4 w-full border border-gray-300 bg-white">
 
         <div class="mt-2 md:mb-5 mb-3 font-bold">Menu & Locations</div>
+
+        {% if data.flag_custom %}
+            <div class="text-sm">
+                No menu or location data entered
+            </div>
+        {% endif %}
 
         {% for logistics in data.logistics.is_active %}
         <!-- START HEADING -->
@@ -456,153 +470,221 @@
 
         <!-- START HEADING -->
         <div class="md:grid md:grid-cols-5 grid-cols-1 pb-2 border-b border-b-gray-100 hidden">
-            <div class="md:col-span-2 font-bold text-xs">Package</div>
+            {% if data.flag_custom %}
+                <div class="md:col-span-2 font-bold text-xs">Cost Type</div>
+            {% else %}
+                <div class="md:col-span-2 font-bold text-xs">Package</div>
+            {% endif %}
             <div class="pr-5 font-bold text-xs md:text-right">Costs</div>
             <div class="md:col-span-2 font-bold text-xs">Notes</div>
         </div>
         <!-- END HEADING -->
 
-        <!-- START DETAILS -->
-        {% for logistics in packages_estimated_cost %}
-            <!-- START LOGISTICS HEADING -->
-            <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
-                <div class="col-span-5 font-bold text-xs">
-                {{logistics.description}}
-                </div>
+        {% if data.flag_custom %}
+        <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+            <div class="md:col-span-2 text-xs">
+                Food (Internal)
             </div>
-            <!-- END LOGISTICS HEADING -->
-            <!-- START LOGISTICS PACKAGES -->
-            <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
-            {% for package in logistics.packages %}
-                    <div class="md:col-span-2 text-xs">
-                        {{package.name}}
-
-                        {% for addon in package.addons_staff %}
-                            <br/>
-                            <span class="ml-2">
-                                <i class="material-icons text-sm" style="position: relative; top: 0.1em;">add_circle_outline</i>
-                                Addon: {{addon.name}}
-                            </span>
-                        {% endfor %}
-                    </div>
-                    <div class="pr-5 text-xs md:text-right">
-                        {% if forloop.first %}
-                        {{package.cost|format_currency}}
-                        {% else %}
-                        {{package.cost}}
-                        {% endif %}
-        
-                        {% for addon in package.addons_staff %}
-                            {% if addon.cost == 0 %}
-                                <br/><span class="mr-4">TBD</span>
-                            {% else %}
-                                <br/><span class="mr-4">{{addon.cost}}</span>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                    <div class="md:col-span-2 text-xs">
-                        {{package.guest_count}} guests, at {{package.price_descriptive}}
-
-                        {% for addon in package.addons_staff %}
-                            <div class="flex flex-col justify-between">
-                                <div>
-                                    {% if addon.note %}
-                                        {{addon.note}}
-                                    {% else %}
-                                        &nbsp;
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-            {% endfor %}
+            <div class="pr-5 text-xs md:text-right">
+                {{data.billing_record.food_internal|format_currency}}
             </div>
-            <!-- END LOGISTICS PACKAGES -->
+            <div class="md:col-span-2 text-xs"></div>
+        </div>
 
-            {% if logistics.addons_staff.addons_staff|length > 0 %}
-                <!-- START LOGISTICS ADDONS -->
-                <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
-                {% for addon in logistics.addons_staff.addons_staff %}
-                        <div class="md:col-span-2 text-xs">
-                            <i class="material-icons text-xs text-gray-400" style="position: relative; top: 0.1em;">add_circle_outline</i>
-                            Addon: {{addon.name}}
-                        </div>
-                        <div class="pr-5 text-xs md:text-right">
-                            {% if addon.cost == 0 %}
-                                TBD
-                            {% else %}
-                                {{addon.cost}}
-                            {% endif %}
-                        </div>
-                        <div class="md:col-span-2 text-xs">
-                            <div class="flex flex-col justify-between">
-                                <div>
-                                    {% if addon.cost == 0 %}
-                                        TBD
-                                    {% elif addon.note %}
-                                        {{addon.note}}
-                                    {% elif addon.price_descriptive %}
-                                        {{addon.price_descriptive}}
-                                    {% else %}
-                                        &nbsp;
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                {% endfor %}
-                </div>
-                <!-- END LOGISTICS ADDONS -->
-            {% endif %}
-        {% endfor %}
+        <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+            <div class="md:col-span-2 text-xs">
+                Food (External)
+            </div>
+            <div class="pr-5 text-xs md:text-right">
+                {{data.billing_record.food_external}}
+            </div>
+            <div class="md:col-span-2 text-xs"></div>
+        </div>
 
-        {% if flag_order_addons %}
-            <!-- START – ORDER ADD-ONS -->
-                <!-- START ORDER ADD-ONS HEADING -->
+        <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+            <div class="md:col-span-2 text-xs">
+                Alcohol & Beverages
+            </div>
+            <div class="pr-5 text-xs md:text-right">
+                {{data.billing_record.alcohol_beverages}}
+            </div>
+            <div class="md:col-span-2 text-xs"></div>
+        </div>
+
+        <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+            <div class="md:col-span-2 text-xs">
+                Labor
+            </div>
+            <div class="pr-5 text-xs md:text-right">
+                {{data.billing_record.labor}}
+            </div>
+            <div class="md:col-span-2 text-xs"></div>
+        </div>
+
+        <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+            <div class="md:col-span-2 text-xs">
+                Rentals
+            </div>
+            <div class="pr-5 text-xs md:text-right">
+                {{data.billing_record.rentals}}
+            </div>
+            <div class="md:col-span-2 text-xs"></div>
+        </div>
+        {% else %}
+
+            <!-- START DETAILS -->
+            {% for logistics in packages_estimated_cost %}
+                <!-- START LOGISTICS HEADING -->
                 <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
                     <div class="col-span-5 font-bold text-xs">
-                    Other Addons
+                    {{logistics.description}}
                     </div>
                 </div>
-                <!-- END ORDER ADD-ONS HEADING -->
-                <!-- START ORDER ADD-ONS DETAILS -->
+                <!-- END LOGISTICS HEADING -->
+                <!-- START LOGISTICS PACKAGES -->
                 <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
-                {% for addon in order.addons_staff.is_active %}
-                    {% if addon.logistics %}
-                    {% elif addon.package %}
-                    {% else %}
+                {% for package in logistics.packages %}
                         <div class="md:col-span-2 text-xs">
-                            Addon: {{addon.name}}
+                            {{package.name}}
+
+                            {% for addon in package.addons_staff %}
+                                <br/>
+                                <span class="ml-2">
+                                    <i class="material-icons text-sm" style="position: relative; top: 0.1em;">add_circle_outline</i>
+                                    Addon: {{addon.name}}
+                                </span>
+                            {% endfor %}
                         </div>
                         <div class="pr-5 text-xs md:text-right">
-                            {% if addon.cost == 0 %}
-                                TBD
+                            {% if forloop.first %}
+                            {{package.cost|format_currency}}
                             {% else %}
-                                {{addon.price_numeric_fixed|format_currency}}
+                            {{package.cost}}
                             {% endif %}
+            
+                            {% for addon in package.addons_staff %}
+                                {% if addon.cost == 0 %}
+                                    <br/><span class="mr-4">TBD</span>
+                                {% else %}
+                                    <br/><span class="mr-4">{{addon.cost}}</span>
+                                {% endif %}
+                            {% endfor %}
                         </div>
                         <div class="md:col-span-2 text-xs">
-                            <div class="flex flex-col justify-between">
-                                <div>
-                                    {% if addon.note %}
-                                        {{addon.note}}
-                                    {% else %}
-                                        &nbsp;
-                                    {% endif %}
+                            {{package.guest_count}} guests, at {{package.price_descriptive}}
+
+                            {% for addon in package.addons_staff %}
+                                <div class="flex flex-col justify-between">
+                                    <div>
+                                        {% if addon.note %}
+                                            {{addon.note}}
+                                        {% else %}
+                                            &nbsp;
+                                        {% endif %}
+                                    </div>
                                 </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                    {% endif %}
                 {% endfor %}
                 </div>
-                <!-- END ORDER ADD-ONS DETAILS -->
-            <!-- END – ORDER ADD-ONS -->
+                <!-- END LOGISTICS PACKAGES -->
+
+                {% if logistics.addons_staff.addons_staff|length > 0 %}
+                    <!-- START LOGISTICS ADDONS -->
+                    <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+                    {% for addon in logistics.addons_staff.addons_staff %}
+                            <div class="md:col-span-2 text-xs">
+                                <i class="material-icons text-xs text-gray-400" style="position: relative; top: 0.1em;">add_circle_outline</i>
+                                Addon: {{addon.name}}
+                            </div>
+                            <div class="pr-5 text-xs md:text-right">
+                                {% if addon.cost == 0 %}
+                                    TBD
+                                {% else %}
+                                    {{addon.cost}}
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-2 text-xs">
+                                <div class="flex flex-col justify-between">
+                                    <div>
+                                        {% if addon.cost == 0 %}
+                                            TBD
+                                        {% elif addon.note %}
+                                            {{addon.note}}
+                                        {% elif addon.price_descriptive %}
+                                            {{addon.price_descriptive}}
+                                        {% else %}
+                                            &nbsp;
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                    {% endfor %}
+                    </div>
+                    <!-- END LOGISTICS ADDONS -->
+                {% endif %}
+            {% endfor %}
+
+        {% endif %}
+
+
+        {% if not data.flag_custom %}
+
+            {% if flag_order_addons %}
+                <!-- START – ORDER ADD-ONS -->
+                    <!-- START ORDER ADD-ONS HEADING -->
+                    <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+                        <div class="col-span-5 font-bold text-xs">
+                        Other Addons
+                        </div>
+                    </div>
+                    <!-- END ORDER ADD-ONS HEADING -->
+                    <!-- START ORDER ADD-ONS DETAILS -->
+                    <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
+                    {% for addon in order.addons_staff.is_active %}
+                        {% if addon.logistics %}
+                        {% elif addon.package %}
+                        {% else %}
+                            <div class="md:col-span-2 text-xs">
+                                Addon: {{addon.name}}
+                            </div>
+                            <div class="pr-5 text-xs md:text-right">
+                                {% if addon.cost == 0 %}
+                                    TBD
+                                {% else %}
+                                    {{addon.price_numeric_fixed|format_currency}}
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-2 text-xs">
+                                <div class="flex flex-col justify-between">
+                                    <div>
+                                        {% if addon.note %}
+                                            {{addon.note}}
+                                        {% else %}
+                                            &nbsp;
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                    <!-- END ORDER ADD-ONS DETAILS -->
+                <!-- END – ORDER ADD-ONS -->
+            {% endif %}
         {% endif %}
         <!-- END DETAILS -->
 
         <!-- START FOOTER -->
         <div class="grid md:grid-cols-5 grid-cols-1 py-2 border-b border-b-gray-100">
             <div class="md:col-span-2 font-bold text-xs">TOTAL</div>
-            <div id="cost" class="pr-5 text-xs font-bold md:text-right">{{total_estimated_cost|format_currency}}</div>
+            <div id="cost" class="pr-5 text-xs font-bold md:text-right">
+                {% if data.flag_custom %}
+                    {{data.billing_record.total_cost|format_currency}}
+                {% else %}
+                    {{total_estimated_cost|format_currency}}
+                {% endif %}
+            </div>
             <div class="md:col-span-2 font-bold text-xs"></div>
         </div>
         <div class="py-2 text-xs text-gray-400">
