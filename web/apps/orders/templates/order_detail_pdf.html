@@ -34,23 +34,23 @@
                             </div>
 
                             {% if data.flag_custom %}
-                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-steel-500 rounded-md">
+                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-xs bg-steel-500 rounded-md">
                                     <div><i class="material-icons" style="position: relative; top: 0.1em;">grade</i></div>
                                     <div>CUSTOM ORDER</div>
                                 </div>
                             {% else %}
                                 {% if data.status.status == 'CONFIRMED' %}
-                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-xs bg-green-500 rounded-md">
                                     <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
                                     <div class="ml-2">{{data.status.get_status_display.upper}}</div>
                                 </div>
                                 {% elif data.status.status == 'CHANGE_REQUEST' %}
-                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-green-500 rounded-md">
+                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-xs bg-green-500 rounded-md">
                                     <div><i class="material-icons" style="position: relative; top: 0.1em;">check</i></div>
                                     <div class="ml-2">{{data.status.get_status_display.upper}}</div>
                                 </div>
                                 {% elif data.status.status == 'CANCELLED' %}
-                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-sm bg-red-500 rounded-md">
+                                <div class="flex flex-row ml-3 px-3 pl-2 py-1 items-center h-6 text-white text-xs bg-red-500 rounded-md">
                                     <div><i class="material-icons" style="position: relative; top: 0.1em;">close</i></div>
                                     <div class="ml-2">
                                         CANCELLED on {{order.status.date_changed|date:"F j, Y"}} at
@@ -482,6 +482,59 @@
                         <!-- END HEADING -->
 
                         <!-- START DETAILS -->
+                        {% if data.flag_custom %}
+
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    Food (Internal)
+                                </td>
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {{data.billing_record.food_internal|format_currency}}
+                                </td>
+                                <td class="w-2/5 py-2 text-xs"></td>
+                            </tr>
+
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    Food (External)
+                                </td>
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {{data.billing_record.food_external}}
+                                </td>
+                                <td class="w-2/5 py-2 text-xs"></td>
+                            </tr>
+
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    Alcohol & Beverages
+                                </td>
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {{data.billing_record.alcohol_beverages}}
+                                </td>
+                                <td class="w-2/5 py-2 text-xs"></td>
+                            </tr>
+
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    Labor
+                                </td>
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {{data.billing_record.labor}}
+                                </td>
+                                <td class="w-2/5 py-2 text-xs"></td>
+                            </tr>
+
+                            <tr class="pb-2 border-b border-b-gray-100">
+                                <td class="w-2/5 py-2 text-xs">
+                                    Rentals
+                                </td>
+                                <td class="w-1/5 py-2 pr-5 text-xs text-right">
+                                    {{data.billing_record.rentals}}
+                                </td>
+                                <td class="w-2/5 py-2 text-xs"></td>
+                            </tr>                        
+
+                        {% else %}
                         {% for logistics in packages_estimated_cost %}
                             <!-- START LOGISTICS HEADING -->
                             <tr class="pb-2 border-b border-b-gray-100">
@@ -570,8 +623,9 @@
                                 <!-- END LOGISTICS ADDONS -->
                             {% endif %}
                         {% endfor %}
+                        {% endif %}
 
-                        {% if flag_order_addons %}
+                        {% if flag_order_addons and not data.flag_custom %}
                             <!-- START – ORDER ADD-ONS -->
 
                                 <!-- START ORDER ADD-ONS HEADING -->
@@ -614,7 +668,13 @@
                         <!-- START FOOTER -->
                         <tr class="pb-2 border-b border-b-gray-100">
                             <td class="w-2/5 py-2 font-bold text-xs">TOTAL</td>
-                            <td class="w-1/5 py-2 pr-5 font-bold text-xs text-right">{{total_estimated_cost|format_currency}}</td>
+                            <td class="w-1/5 py-2 pr-5 font-bold text-xs text-right">
+                                {% if data.flag_custom %}
+                                    {{data.billing_record.total_cost|format_currency}}
+                                {% else %}
+                                    {{total_estimated_cost|format_currency}}
+                                {% endif %}
+                            </td>
                             <td class="w-2/5 py-2 font-bold text-xs"></td>
                         </tr>
 
