@@ -32,7 +32,7 @@
       select2TenantGroup.val(value).trigger('change');
     });
 
-    select2User = $($refs.user).select2();
+    select2User = $($refs.userselect).select2();
     select2User.on('select2:select', (event) => {
       selectedUser = event.target.value;
       selectedTenant = null;
@@ -125,7 +125,7 @@
                     {% include 'generic/generic_form_field.html' with form=form field=form.tenant_group ref="tenantgroup" %}
                     
                     <!-- USER -->
-                    {% include 'generic/generic_form_field.html' with form=form field=form.user ref="user" %}
+                    {% include 'generic/generic_form_field.html' with form=form field=form.user ref="userselect" %}
                 </div>
 
                 <!-- COST TYPE -->

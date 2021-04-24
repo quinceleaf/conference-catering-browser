@@ -13,7 +13,7 @@ load_dotenv()
 # ENV
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-DEBUG = os.getenv("DEBUG", False)
+DEBUG = os.getenv("DEBUG", True)
 SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 

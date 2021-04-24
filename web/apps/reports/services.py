@@ -83,7 +83,7 @@ def filter_billing_records(
         elif user_id:
             qs = qs.filter(customer=user_id)
             user = users_models.User.objects.get(id=user_id)
-            if re.search("University", tenant.name):
+            if re.search("University", user.tenant.name):
                 tenant_flag = "university"
             filter_conditions.append(
                 f"placed by customer <strong>{user.get_full_name}</strong>"
@@ -124,7 +124,6 @@ def filter_billing_records(
         .select_related("order")
         .only("order__customer")
     )
-    print("billing_record_fields:", billing_records[0].get_fields())
 
     # calculate summary of costs for filtered billing records
     summary = billing_records.aggregate(

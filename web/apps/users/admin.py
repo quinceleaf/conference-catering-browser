@@ -91,7 +91,11 @@ class UserGroup(BaseAdminConfig):
 
 @admin.register(models.User)
 class User(BaseAdminConfig):
-    pass
+    search_fields = (
+        "first_name",
+        "last_name",
+        "email",
+    )
 
 
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
